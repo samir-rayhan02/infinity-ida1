@@ -123,6 +123,42 @@ function admin(){
   document.querySelectorAll('[data-r]').forEach(b=>b.onclick=()=>{if(!confirm('@'+b.dataset.r+' কে রিমুভ করবে?'))return;mem.users=mem.users.filter(v=>v.u!==b.dataset.r);delete mem.projects[b.dataset.r];save();admin()});
 }
 load();render();
+</script><script>
+const ctx = new (window.AudioContext || window.webkitAudioContext)();
+
+// browser-er rule: prothome ekbar touch/click/key lagbe
+["pointerdown", "touchstart", "keydown", "wheel"].forEach(ev =>
+  window.addEventListener(ev, () => ctx.state === "suspended" && ctx.resume(), { once: true, passive: true })
+);
+
+let lastPlay = 0;
+function tick() {
+  const now = performance.now();
+  if (now - lastPlay < 25) return; // druto scroll-e jhaparo ropodh
+  lastPlay = now;
+
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.type = "square";
+  osc.frequency.value = 700;
+  gain.gain.setValueAtTime(0.08, ctx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.04);
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+  osc.start();
+  osc.stop(ctx.currentTime + 0.04);
+}
+
+const LINE_HEIGHT = 24; // tomar page-er line-height (px)
+let lastLine = -1;
+
+window.addEventListener("scroll", () => {
+  const line = Math.floor(window.scrollY / LINE_HEIGHT);
+  if (line !== lastLine) {
+    lastLine = line;
+    tick();
+  }
+}, { passive: true });
 </script>
 </body>
 </html>
